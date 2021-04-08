@@ -501,8 +501,12 @@ void hm_insert(hm_t *hm, char *key, char *value) {
   hm_ll_node_t **prev = &hm->buckets[hash % HM_BUCKETS];
   while (*prev != NULL) {
     if ((*prev)->hash == hash) {
-      // can't free the value ptr since we don't know where it came from
-      d_die("Trying to insert existing key into hashmap!");
+      // free the old key/value and insert here
+      free((*prev)->first);
+      free((*prev)->second);
+      (*prev)->first = key;
+      (*prev)->second = value;
+      return;
     }
     *prev = (*prev)->next;
   }
