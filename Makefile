@@ -11,4 +11,4 @@ run: lr
 clean:
 	rm -f lr
 
-.PHONY: clean
+.PHONY: clean run

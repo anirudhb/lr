@@ -1,0 +1,8 @@
+lr - a simple, fast link shortener
+----------------------------------
+
+Check out the source for more usage instructions.
+If you would like to use the provided Makefile, the following targets are available:
+* make - will build lr and touch the links.csv file if necessary
+* make run - will build and run lr
+* make clean - will clean the lr executable but will not touch links.csv
