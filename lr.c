@@ -21,9 +21,9 @@
  * =============
  *
  * lr is very simple to use.
- * To get started, compile this file. lr requires a C99 compiler, a libc that is compliant to
- * POSIX-1.2008, the socket library and the pthread library. These are installed by default on most
- * systems, so you can simply compile using:
+ * To get started, compile this file. lr requires a C99 compiler, a libc that is
+ * compliant to POSIX-1.2008, the socket library and the pthread library. These
+ * are installed by default on most systems, so you can simply compile using:
  *  gcc -std=c99 -pthread -o lr lr.c
  *
  * Next, create the file links.csv in the current directory.
@@ -41,15 +41,14 @@
  *  yt,https://youtube.com
  * etc.
  *
- * Links can be inserted at runtime using the special endpoint example.com/?insert.
- * To insert a link, make a POST request to that endpoint.
- * Ensure that you include your API key in the Authorization header of the request, like this:
- *  Authorization: Bearer qwertyuiop
- * Then, add any number of X-Insert-Link headers *after* the Authorization header, for each link
- * you would like to insert:
- *  X-Insert-Link: gh https://github.com
- *  X-Insert-Link: tw https://twitter.com
- * Note that if the X-Insert-Link headers precede the Authorization header they will *not* be interpreted.
+ * Links can be inserted at runtime using the special endpoint
+ * example.com/?insert. To insert a link, make a POST request to that endpoint.
+ * Ensure that you include your API key in the Authorization header of the
+ * request, like this: Authorization: Bearer qwertyuiop Then, add any number of
+ * X-Insert-Link headers *after* the Authorization header, for each link you
+ * would like to insert: X-Insert-Link: gh https://github.com X-Insert-Link: tw
+ * https://twitter.com Note that if the X-Insert-Link headers precede the
+ * Authorization header they will *not* be interpreted.
  *
  * That's all you need to start using lr!
  */
@@ -100,14 +99,6 @@
     exit(EXIT_FAILURE);                                                        \
   } while (0)
 
-// void d_die(const char *fmt, ...) {
-//   va_list argp;
-//   va_start(argp, fmt);
-//   vfprintf(stderr, fmt, argp);
-//   va_end(argp);
-//   exit(EXIT_FAILURE);
-// }
-
 void d_pdie(const char *name) {
   perror(name);
   fprintf(stderr, "pdead\n");
@@ -127,11 +118,6 @@ void *d_realloc(void *ptr, size_t size) {
     d_pdie("realloc");
   return new;
 }
-
-// void d_pthread_mutexattr_settype(pthread_mutexattr_t* attr, int type) {
-//   if (pthread_mutexattr_settype(attr, type) < 0)
-//     d_pdie("pthread_mutexattr_settype");
-// }
 
 void d_pthread_cond_signal(pthread_cond_t *__cond) {
   if (pthread_cond_signal(__cond) != 0)
@@ -360,7 +346,6 @@ typedef struct tp_threadpool_t tp_threadpool_t;
 
 struct tp_worker_thread_t {
   pthread_t thread;
-  // tp_threadpool_t *tp;
 };
 typedef struct tp_worker_thread_t tp_worker_thread_t;
 
@@ -373,17 +358,12 @@ bool tp_threadpool_workers_should_quit(tp_threadpool_t *tp) {
 }
 
 void *tp_worker_thread_worker(void *inp) {
-  // tp_worker_thread_t *worker = inp;
   tp_threadpool_t *tp = inp;
-  // d_pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
   while (!tp_threadpool_workers_should_quit(tp)) {
-    // while (true) {
     tp_job_t job;
     while (q_pop_front(&tp->jobs, &job)) {
       handle_connection(job.fd);
     }
-    // // cancellation point
-    // sleep(0);
     // take the jobs lock and wait
     d_pthread_mutex_lock(&tp->jobs.lock);
     d_pthread_cond_wait(&tp->jobs_notify, &tp->jobs.lock);
@@ -394,7 +374,6 @@ void *tp_worker_thread_worker(void *inp) {
 }
 
 void tp_worker_thread_init(tp_threadpool_t *tp, tp_worker_thread_t *worker) {
-  // worker->tp = tp;
   pthread_create(&worker->thread, NULL, tp_worker_thread_worker, tp);
 }
 
@@ -402,10 +381,6 @@ void tp_worker_thread_init(tp_threadpool_t *tp, tp_worker_thread_t *worker) {
 void tp_worker_thread_join(tp_worker_thread_t *worker) {
   d_pthread_join(worker->thread, NULL);
 }
-
-// void tp_worker_thread_cancel(tp_worker_thread_t* worker) {
-//   d_pthread_cancel(worker->thread);
-// }
 
 // Initializes a new threadpool with the given number of threads.
 // The number of threads a threadpool contains cannot be changed
@@ -432,11 +407,6 @@ void tp_threadpool_quit(tp_threadpool_t *tp) {
   d_pthread_mutex_lock(&tp->should_quit_lock);
   tp->should_quit = true;
   d_pthread_mutex_unlock(&tp->should_quit_lock);
-  // Join all threads
-  // for (int i = 0; i < tp->num_threads; i++) {
-  //   tp_worker_thread_join(&tp->threads[i]);
-  //   // tp_worker_thread_cancel(&tp->threads[i]);
-  // }
   free(tp->threads);
 }
 
@@ -635,14 +605,6 @@ void http_request_line_read(int fd, http_request_line *req, char *buf,
       strcmp(http_version, "HTTP/1.0") != 0)
     d_die("Error validating HTTP version: Got %s but expected 1.0 or 1.1",
           http_version);
-  // drop headers
-  // while (strlen(line = sock_readline(fd, buf, 64, &sr_saveptr)) > 0)
-  //   free(line);
-  // // free the empty line
-  // free(line);
-  // read to end
-  // while (d_read(fd, buf, 64) > 0)
-  //   ;
 }
 
 typedef struct {
@@ -883,9 +845,6 @@ int main(int argc, char **argv) {
   // free the line
   free(line);
   d_fclose(f);
-  // hm_insert(&hm, strdup("google"), strdup("https://google.com"));
-  // hm_insert(&hm, strdup("twitter"), strdup("https://twitter.com"));
-  // hm_insert(&hm, strdup("rrust"), strdup("https://reddit.com/r/rust"));
   d_pthread_mutex_unlock(&hm_lock);
 
   printf("Initialized hashmap\n");
