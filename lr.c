@@ -397,7 +397,7 @@ void tp_threadpool_init(tp_threadpool_t *tp, size_t num_threads) {
   tp->next_thread_job_index = 0;
   tp->num_threads = num_threads;
   // allocate worker threads
-  tp->threads = malloc(sizeof(tp_worker_thread_t) * num_threads);
+  tp->threads = d_malloc(sizeof(tp_worker_thread_t) * num_threads);
   for (int i = 0; i < num_threads; i++) {
     tp_worker_thread_init(tp, &tp->threads[i]);
   }
