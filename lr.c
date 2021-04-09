@@ -119,6 +119,12 @@ void *d_realloc(void *ptr, size_t size) {
   return new;
 }
 
+void d_pthread_cond_init(pthread_cond_t *__cond,
+                         const pthread_condattr_t *__cond_attr) {
+  if (pthread_cond_init(__cond, __cond_attr) != 0)
+    d_pdie("pthread_cond_init");
+}
+
 void d_pthread_cond_signal(pthread_cond_t *__cond) {
   if (pthread_cond_signal(__cond) != 0)
     d_pdie("pthread_cond_signal");
@@ -387,6 +393,7 @@ void tp_worker_thread_join(tp_worker_thread_t *worker) {
 // after it is created.
 void tp_threadpool_init(tp_threadpool_t *tp, size_t num_threads) {
   d_pthread_mutex_init(&tp->should_quit_lock, NULL);
+  d_pthread_cond_init(&tp->jobs_notify, NULL);
   tp->next_thread_job_index = 0;
   tp->num_threads = num_threads;
   // allocate worker threads
