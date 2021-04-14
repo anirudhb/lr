@@ -81,6 +81,8 @@
 #define DB_FILENAME "links.csv"
 // API key for adding links
 #define API_KEY "qwertyuiop"
+// Comment out the following line to disable verbose logging per connection
+#define VERBOSE
 
 /** More advanced config - probably don't need to modify */
 
@@ -505,27 +507,28 @@ void hm_init(hm_t *hm) { memset(hm, 0, sizeof(hm_t)); }
 // Inserts an element into the hashmap.
 void hm_insert(hm_t *hm, char *key, char *value) {
   uint64_t hash = hm_fnv1a(key);
-  hm_ll_node_t **prev = &hm->buckets[hash % HM_BUCKETS];
-  while (*prev != NULL) {
-    if ((*prev)->hash == hash) {
+  printf("Inserting %s -> %s (%lu)\n", key, value, hash);
+  hm_ll_node_t *prev = hm->buckets[hash % HM_BUCKETS];
+  while (prev != NULL && prev->next != NULL) {
+    if (prev->hash == hash) {
       // free the old key/value and insert here
-      free((*prev)->first);
-      free((*prev)->second);
-      (*prev)->first = key;
-      (*prev)->second = value;
+      free(prev->first);
+      free(prev->second);
+      prev->first = key;
+      prev->second = value;
       return;
     }
-    *prev = (*prev)->next;
+    prev = prev->next;
   }
   hm_ll_node_t *new = d_malloc(sizeof(hm_ll_node_t));
   new->hash = hash;
   new->first = key;
   new->second = value;
-  new->next = *prev == NULL ? NULL : (*prev)->next;
-  if ((*prev) == NULL)
-    *prev = new;
+  new->next = NULL;
+  if (prev == NULL)
+    hm->buckets[hash % HM_BUCKETS] = new;
   else
-    (*prev)->next = new;
+    prev->next = new;
 }
 
 // Gets an element in the hashmap
@@ -755,7 +758,9 @@ void handle_connection(int fd) {
     }
   } else {
     const char *link = req.path + 1;
+#ifdef VERBOSE
     printf("Got link: %s\n", link);
+#endif
     if (*link == '\0') {
       http_response_line_write(fd, 404);
       goto done;
@@ -866,7 +871,9 @@ int main(int argc, char **argv) {
     socklen_t their_addrsize = sizeof(their_addr);
     int newfd =
         d_accept(sockfd, (struct sockaddr *)&their_addr, &their_addrsize);
+#ifdef VERBOSE
     printf("Got connection\n");
+#endif
     tp_job_t job;
     job.fd = newfd;
     tp_threadpool_add_job(&tp, &job);
